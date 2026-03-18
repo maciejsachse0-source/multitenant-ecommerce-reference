@@ -6,13 +6,15 @@ import { isSuperAdmin } from "@/lib/access";
 export const Products: CollectionConfig = {
   slug: "products",
   access: {
-    create: ({ req }) => {
-      if (isSuperAdmin(req.user)) return true;
-
-      const tenant = req.user?.tenants?.[0]?.tenant as Tenant
-
-      return Boolean(tenant?.stripeDetailsSubmitted);
-    },
+    // TODO: Uncomment to require Stripe verification before creating products
+    // create: ({ req }) => {
+    //   if (isSuperAdmin(req.user)) return true;
+    //
+    //   const tenant = req.user?.tenants?.[0]?.tenant as Tenant
+    //
+    //   return Boolean(tenant?.stripeDetailsSubmitted);
+    // },
+    create: () => true,
     delete: ({ req }) => isSuperAdmin(req.user),
   },
   admin: {
