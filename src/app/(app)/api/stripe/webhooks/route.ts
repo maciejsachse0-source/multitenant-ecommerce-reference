@@ -3,7 +3,7 @@ import { getPayload } from "payload";
 import config from "@payload-config";
 import { NextResponse } from "next/server";
 
-import { stripe } from "@/lib/stripe";
+import { getStripe } from "@/lib/stripe";
 
 import { ExpandedLineItem } from "@/modules/checkout/types";
 
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   let event: Stripe.Event;
 
   try {
-    event = stripe.webhooks.constructEvent(
+    event = getStripe().webhooks.constructEvent(
       await (await req.blob()).text(),
       req.headers.get("stripe-signature") as string,
       process.env.STRIPE_WEBHOOK_SECRET as string,
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
             throw new Error("User not found");
           }
 
-          const expandedSession = await stripe.checkout.sessions.retrieve(
+          const expandedSession = await getStripe().checkout.sessions.retrieve(
             data.id,
             {
               expand: ["line_items.data.price.product"],
