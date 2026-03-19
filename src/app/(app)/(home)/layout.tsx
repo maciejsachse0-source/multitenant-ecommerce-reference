@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Suspense } from "react";
 import { dehydrate, HydrationBoundary } from "@tanstack/react-query";
 
@@ -13,9 +15,13 @@ interface Props {
 
 const Layout = async ({ children }: Props) => {
   const queryClient = getQueryClient();
-  void queryClient.prefetchQuery(
-    trpc.categories.getMany.queryOptions(),
-  ).catch(() => {});
+  const categoriesQueryOptions = trpc.categories.getMany.queryOptions();
+  await queryClient.prefetchQuery(categoriesQueryOptions).catch(() => {
+    // If prefetch fails (e.g. no DB at build time), remove the errored query
+    // from the cache so useSuspenseQuery in SearchFilters suspends gracefully
+    // instead of re-throwing the cached error during prerendering.
+    queryClient.removeQueries({ queryKey: categoriesQueryOptions.queryKey });
+  });
 
   return ( 
     <div className="flex flex-col min-h-screen">
